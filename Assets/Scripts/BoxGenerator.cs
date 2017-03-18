@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BoxGenerator : MonoBehaviour {
-    
+
+    [SerializeField]
+    private int boxQuantity = 10;    // how many boxes will be generated
     [SerializeField]
     private GameObject greenBoxPrefab;
     [SerializeField]
     private Transform boxParent;
     private float boxOffset = 2.5f;     // so box will instatiate on the top of terrain GetComponent<BoxCollider>().bounds.size
-    private List<GameObject> boxList = new List<GameObject>();   
+    private List<Box> boxList = new List<Box>();   
 
     //Create box with mouse click
     public void CreateGreenBox(Vector3 point)
@@ -18,13 +20,14 @@ public class BoxGenerator : MonoBehaviour {
         {
             Vector3 boxPos = new Vector3(point.x, point.y + boxOffset, point.z);
             GameObject newBox = Instantiate(greenBoxPrefab, boxPos, Quaternion.identity, boxParent);
-            boxList.Add(newBox);
+            boxList.Add(newBox.GetComponent<Box>());
         }
     }
 
     // generate boxes at random positions on terrain
-    public void GenerateBoxes(int quantity)
+    public void GenerateBoxes()
     {
+        int quantity = boxQuantity;
         DestroyAllBoxes();
         
         float terrainWidth = Terrain.activeTerrain.terrainData.size.x;
@@ -32,7 +35,7 @@ public class BoxGenerator : MonoBehaviour {
         float terrainPositionX = Terrain.activeTerrain.transform.position.x;
         float terrainPositionZ = Terrain.activeTerrain.transform.position.z;
 
-        while (quantity !=0)
+        while (quantity != 0)
         {
             float posX = Random.Range(terrainPositionX, terrainPositionX + terrainWidth);
             float posZ = Random.Range(terrainPositionZ, terrainPositionZ + terrainLength);
@@ -42,7 +45,7 @@ public class BoxGenerator : MonoBehaviour {
             if (IsPositionValid(newPos))
             {
                 GameObject newBox = Instantiate(greenBoxPrefab, newPos, Quaternion.identity, boxParent);
-                boxList.Add(newBox);
+                boxList.Add(newBox.GetComponent<Box>());
                 quantity--;
             }
         }
@@ -56,12 +59,38 @@ public class BoxGenerator : MonoBehaviour {
         if (colls.Length == 1) return true;
         else return false;
 	}
-    
+
+    public void ResetAllBoxes()
+    {
+        foreach (Box box in boxList)
+        {
+            box.ResetSettings();
+        }
+    }
+
+    public void LightFewBoxes()
+    {
+        int fireTheseBoxes = boxQuantity / 5;
+        List<Box> usedBoxes = new List<Box>();
+        while (fireTheseBoxes != 0)
+        {
+            int boxIndex = Random.Range(0, boxList.Count);
+
+            if (!usedBoxes.Contains(boxList[boxIndex]))
+            {
+                boxList[boxIndex].StartBurning();
+                usedBoxes.Add(boxList[boxIndex]);
+                fireTheseBoxes--;
+            }
+        }
+    }
+
     public void DestroyAllBoxes()
     {
-        foreach (GameObject box in boxList)
+        foreach (Box box in boxList)
         {
-            Destroy(box);
+            Destroy(box.gameObject);
         }
+        boxList.Clear();
     }
 }
