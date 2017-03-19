@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
 
 public class Manager : Singleton<Manager> {
-
-    public Mode clickingMode = Mode.Add;
+ 
     [SerializeField]
     private int boxQuantity = 200;
     [SerializeField]
     private int lightBoxesQuantity = 50;
     private BoxGenerator boxGenerator;
     private bool isSimulating = false;
-    
+    private Mode clickingMode = Mode.Add;   // this is modified in dropdown
 
     public delegate void GeneralEventHandler();
     public event GeneralEventHandler StartSimulation;
@@ -29,35 +28,73 @@ public class Manager : Singleton<Manager> {
             RaycastHit hit;
             if (Physics.Raycast(ray,out hit))
             {
-                // if hits terrain, create green box
-                if (hit.transform.tag == "Ground")
+                switch(clickingMode)
                 {
-                    boxGenerator.CreateGreenBox(hit.point);
+                    case Mode.Add: CreateBox(hit);
+                        break;
+                    case Mode.Remove: RemoveBox(hit);
+                        break;
+                    case Mode.ToggleFire: LightBox(hit);
+                        break;
                 }
             }
         }
 	}
 
-    //called via button
+    public void ChangeClickMode(Mode mode)
+    {
+        clickingMode = mode;
+    }
+
+    //CLICKS
+    public void CreateBox(RaycastHit hit)
+    {
+        // if hits terrain, create green box
+        if (hit.transform.tag == "Ground")
+        {
+            boxGenerator.CreateGreenBox(hit.point);
+        }
+    }
+
+    public void RemoveBox(RaycastHit hit)
+    {
+        // if hits box, destroy it
+        if (hit.transform.tag == "Box")
+        {
+            Destroy(hit.transform.gameObject);
+        }
+    }
+
+    public void LightBox(RaycastHit hit)
+    {
+        // if hits box, light that box
+        if (hit.transform.tag == "Box")
+        {
+            hit.transform.gameObject.GetComponent<Box>().LightThis();
+        }
+    }
+
+
+    //BUTTONS
+    // create boxes at random position on terrain
     public void GenerateBoxes()
     {
         boxGenerator.GenerateBoxes(boxQuantity);
     }
-
-    //called via button
+    // light few random boxes
     public void LightBoxes()
     {
         boxGenerator.LightBoxes(lightBoxesQuantity);
     }
 
-    //called via button, destroy all boxes in scene
+    // destroy all boxes in scene
     public void CallClearEvent()
     {
         if (Clear != null) Clear();
         boxGenerator.boxList.Clear();
     }
 
-    //called via button
+    // start/ stop simulate fire spreading
     public void Simulation()
     {
         isSimulating = !isSimulating;
@@ -71,7 +108,6 @@ public class Manager : Singleton<Manager> {
         }
     }
 
-    //called via button, destroy all boxes in scene
     public void Quit()
     {
     #if UNITY_EDITOR
