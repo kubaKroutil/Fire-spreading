@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BoxGenerator : MonoBehaviour {
-
-    [SerializeField]
-    private int boxQuantity = 10;    // how many boxes will be generated
+    [HideInInspector]
+    public List<Box> boxList = new List<Box>();
     [SerializeField]
     private GameObject greenBoxPrefab;
     [SerializeField]
     private Transform boxParent;
     private float boxOffset = 2.5f;     // so box will instatiate on the top of terrain GetComponent<BoxCollider>().bounds.size
-    private List<Box> boxList = new List<Box>();   
-
+     
     //Create box with mouse click
     public void CreateGreenBox(Vector3 point)
     {
@@ -23,13 +21,11 @@ public class BoxGenerator : MonoBehaviour {
             boxList.Add(newBox.GetComponent<Box>());
         }
     }
-
     // generate boxes at random positions on terrain
-    public void GenerateBoxes()
+    public void GenerateBoxes(int quantity)
     {
-        int quantity = boxQuantity;
-        DestroyAllBoxes();
-        
+        //DestroyAllBoxes();
+        Manager.Instance.CallClearEvent();
         float terrainWidth = Terrain.activeTerrain.terrainData.size.x;
         float terrainLength = Terrain.activeTerrain.terrainData.size.z;
         float terrainPositionX = Terrain.activeTerrain.transform.position.x;
@@ -50,7 +46,6 @@ public class BoxGenerator : MonoBehaviour {
             }
         }
     }
-
     //check if theres enought space for box
     private bool IsPositionValid (Vector3 position) 
 	{
@@ -60,17 +55,8 @@ public class BoxGenerator : MonoBehaviour {
         else return false;
 	}
 
-    public void ResetAllBoxes()
+    public void LightBoxes(int fireTheseBoxes)
     {
-        foreach (Box box in boxList)
-        {
-            box.ResetSettings();
-        }
-    }
-
-    public void LightFewBoxes()
-    {
-        int fireTheseBoxes = boxQuantity / 5;
         List<Box> usedBoxes = new List<Box>();
         while (fireTheseBoxes != 0)
         {
@@ -78,19 +64,10 @@ public class BoxGenerator : MonoBehaviour {
 
             if (!usedBoxes.Contains(boxList[boxIndex]))
             {
-                boxList[boxIndex].StartBurning();
+                boxList[boxIndex].LightThis();
                 usedBoxes.Add(boxList[boxIndex]);
                 fireTheseBoxes--;
             }
         }
-    }
-
-    public void DestroyAllBoxes()
-    {
-        foreach (Box box in boxList)
-        {
-            Destroy(box.gameObject);
-        }
-        boxList.Clear();
     }
 }

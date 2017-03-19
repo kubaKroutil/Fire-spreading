@@ -4,59 +4,83 @@ using UnityEngine;
 
 public class Box : MonoBehaviour {
 
+    [SerializeField]
+    private string flammableMask;
+    [SerializeField]
+    private string defaultMask;
     private bool isBurning = false;
-    private bool isBurnt = false;
+    private bool startSimulate = false;
     private float fireSpreadDelay = 2f;
     private float burningDefaultTime = 4f;
     private float burningTime;
     private MeshRenderer meshRender;
 
-    private void Start()
+    private void OnEnable()
     {
         meshRender = GetComponent<MeshRenderer>();
-        meshRender.material.color = Color.green;
-        burningTime = burningDefaultTime;
+        ResetSettings();
+        Manager.Instance.StartSimulation += StartSimulation;
+        Manager.Instance.StopSimulation += ResetSettings;
+        Manager.Instance.Clear += DestroyThis;
+    }
+
+    private void OnDisable()
+    {
+        Manager.Instance.StartSimulation -= StartSimulation;
+        Manager.Instance.StopSimulation -= ResetSettings;
+        Manager.Instance.Clear -= DestroyThis;
     }
 
     private void Update()
     {
-        if (isBurnt) return;
-        if (isBurning) burningTime -= Time.deltaTime;
-        if (burningTime < 0) Burnt();
+        if (isBurning && startSimulate)
+        {
+            burningTime -= Time.deltaTime;
+            if (burningTime < 0)
+            {   // box burnt
+                isBurning = false;
+                meshRender.material.color = Color.black;
+            }
+        }
     }
 
-    public void StartBurning()
+    public void LightThis()
     {
         isBurning = true;
         meshRender.material.color = Color.red;
-        this.tag = "Untagged";
-        StartCoroutine(SpreadFire());
+        this.gameObject.layer = LayerMask.NameToLayer(defaultMask);
+        //check if this happen before or during simulation
+        if (startSimulate) StartCoroutine(SpreadFire());
     }
 
-    private void Burnt()
+    public void StartSimulation()
     {
-        isBurnt = true;
-        meshRender.material.color = Color.black;
+        startSimulate = true;
+        if(isBurning) StartCoroutine(SpreadFire());
     }
-
+    //box spread fire only once
     private IEnumerator SpreadFire()
     {
         yield return new WaitForSeconds(fireSpreadDelay);
-        Collider[] colls = Physics.OverlapSphere(this.transform.position, 20);
+        Collider[] colls = Physics.OverlapSphere(this.transform.position, 20, 1 << LayerMask.NameToLayer(flammableMask));
         foreach (Collider coll in colls)
         {
-            if (coll.tag == "Flammable") coll.gameObject.GetComponent<Box>().StartBurning();
+            coll.gameObject.GetComponent<Box>().LightThis();
         }
-
     }
-
+    // also "stopSimulation"
     public void ResetSettings()
     {
         StopAllCoroutines();
         isBurning = false;
-        isBurnt = false;
+        startSimulate = false;
         meshRender.material.color = Color.green;
         burningTime = burningDefaultTime;
-        this.tag = "Flammable";
+        this.gameObject.layer = LayerMask.NameToLayer(flammableMask); 
+    }
+
+    public void DestroyThis()
+    {
+        Destroy(this.gameObject);
     }
 }
