@@ -1,12 +1,20 @@
 ﻿using UnityEngine;
 
 public class Manager : Singleton<Manager> {
- 
+    //TODO FIX RAYCAST, pri kliku na tlacitko se vytvori box
+    //WIND
+    public float WindSpeed { get; set; } // modified by slider. values 0 - 10    
+    public float WindRotation { get; private set; } // modified by slider. values 0 - 359
     [SerializeField]
-    private int boxQuantity = 200;
+    private GameObject windArrow;         // visual indicator for wind rotation
+   
+    //BOXES
     [SerializeField]
-    private int lightBoxesQuantity = 50;
+    private int boxQuantity = 200;          // for generating boxes
+    [SerializeField]
+    private int lightBoxesQuantity = 50;    // for random light boxes
     private BoxGenerator boxGenerator;
+    //MANAGER
     private bool isSimulating = false;
     private Mode clickingMode = Mode.Add;   // this is modified in dropdown
 
@@ -18,7 +26,8 @@ public class Manager : Singleton<Manager> {
     private void Start () 
 	{
         boxGenerator = GetComponent<BoxGenerator>();
-	}
+        WindRotation = 0;
+    }
 
 	private void Update () 
 	{
@@ -44,6 +53,12 @@ public class Manager : Singleton<Manager> {
     public void ChangeClickMode(Mode mode)
     {
         clickingMode = mode;
+    }
+
+    public void ChangeWindDirection(float rotation)
+    {
+        WindRotation = rotation;
+        windArrow.transform.localEulerAngles = new Vector3(0, 0, rotation);
     }
 
     //CLICKS
@@ -108,6 +123,7 @@ public class Manager : Singleton<Manager> {
         }
     }
 
+    //EXIT
     public void Quit()
     {
     #if UNITY_EDITOR
