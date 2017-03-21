@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BoxGenerator : MonoBehaviour {
-    [HideInInspector]
-    public List<Box> boxList = new List<Box>();
+
     [SerializeField]
     private GameObject greenBoxPrefab;
     [SerializeField]
     private Transform boxParent;
-    private float boxOffset = 2.5f;     // so box will instatiate on the top of terrain GetComponent<BoxCollider>().bounds.size
+    private float boxOffset = 2.5f;     // so box will instatiate on the top of terrain
      
     //Create box with mouse click
     public void CreateGreenBox(Vector3 point)
@@ -17,8 +16,7 @@ public class BoxGenerator : MonoBehaviour {
         if (IsPositionValid(point))
         {
             Vector3 boxPos = new Vector3(point.x, point.y + boxOffset, point.z);
-            GameObject newBox = Instantiate(greenBoxPrefab, boxPos, Quaternion.identity, boxParent);
-            boxList.Add(newBox.GetComponent<Box>());
+            Instantiate(greenBoxPrefab, boxPos, Quaternion.identity, boxParent);
         }
     }
     // generate boxes at random positions on terrain
@@ -40,8 +38,7 @@ public class BoxGenerator : MonoBehaviour {
 
             if (IsPositionValid(newPos))
             {
-                GameObject newBox = Instantiate(greenBoxPrefab, newPos, Quaternion.identity, boxParent);
-                boxList.Add(newBox.GetComponent<Box>());
+                Instantiate(greenBoxPrefab, newPos, Quaternion.identity, boxParent);
                 quantity--;
             }
         }
@@ -56,16 +53,16 @@ public class BoxGenerator : MonoBehaviour {
 	}
 
     public void LightBoxes(int fireTheseBoxes)
-    {
-        List<Box> usedBoxes = new List<Box>();
+    {   //check if there are boxes
+        if (boxParent.childCount == 0) return;
+        List<Transform> usedBoxes = new List<Transform>();  //collect boxes, you already light, so you dont light it twice
         while (fireTheseBoxes != 0)
-        {
-            int boxIndex = Random.Range(0, boxList.Count);
-
-            if (!usedBoxes.Contains(boxList[boxIndex]))
+        {   //take random child from box parent and check if you already used it
+            int boxIndex = Random.Range(0, boxParent.childCount);
+            if (!usedBoxes.Contains(boxParent.GetChild(boxIndex)))
             {
-                boxList[boxIndex].LightThis();
-                usedBoxes.Add(boxList[boxIndex]);
+                boxParent.GetChild(boxIndex).GetComponent<Box>().LightThis();
+                usedBoxes.Add(boxParent.GetChild(boxIndex));
                 fireTheseBoxes--;
             }
         }

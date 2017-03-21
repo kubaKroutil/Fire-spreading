@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Manager : Singleton<Manager> {
-    //TODO FIX RAYCAST, pri kliku na tlacitko se vytvori box
+
     //WIND
     public float WindSpeed { get; set; } // modified by slider. values 0 - 10    
     public float WindRotation { get; private set; } // modified by slider. values 0 - 359
@@ -14,6 +15,7 @@ public class Manager : Singleton<Manager> {
     [SerializeField]
     private int lightBoxesQuantity = 50;    // for random light boxes
     private BoxGenerator boxGenerator;
+
     //MANAGER
     private bool isSimulating = false;
     private Mode clickingMode = Mode.Add;   // this is modified in dropdown
@@ -30,8 +32,8 @@ public class Manager : Singleton<Manager> {
     }
 
 	private void Update () 
-	{
-        if (Input.GetMouseButtonDown(0))
+	{   //if you click and mouse is not over UI
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -106,7 +108,6 @@ public class Manager : Singleton<Manager> {
     public void CallClearEvent()
     {
         if (Clear != null) Clear();
-        boxGenerator.boxList.Clear();
     }
 
     // start/ stop simulate fire spreading
