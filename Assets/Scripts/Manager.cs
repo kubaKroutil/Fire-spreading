@@ -5,16 +5,20 @@ public class Manager : Singleton<Manager> {
 
     //WIND
     public float WindSpeed { get; set; } // modified by slider. values 0 - 10    
-    public float WindRotation { get; private set; } // modified by slider. values 0 - 359
     [SerializeField]
     private GameObject windArrow;         // visual indicator for wind rotation
-   
+    private int windMultiplier = 2;     //coz map is big
+
     //BOXES
     [SerializeField]
     private int boxQuantity = 200;          // for generating boxes
     [SerializeField]
     private int lightBoxesQuantity = 50;    // for random light boxes
     private BoxGenerator boxGenerator;
+    public float SpreadRange
+    {
+        get { return WindSpeed * windMultiplier; }
+    }
 
     //MANAGER
     private bool isSimulating = false;
@@ -28,7 +32,7 @@ public class Manager : Singleton<Manager> {
     private void Start () 
 	{
         boxGenerator = GetComponent<BoxGenerator>();
-        WindRotation = 0;
+        this.transform.localEulerAngles = new Vector3(0, 90, 0); // == arrow start rotation
     }
 
 	private void Update () 
@@ -57,10 +61,15 @@ public class Manager : Singleton<Manager> {
         clickingMode = mode;
     }
 
+    public Vector3 GetSpreadingPosition(Transform boxTransform)
+    {  
+        return boxTransform.position + this.transform.forward * WindSpeed * windMultiplier;
+    }
+
     public void ChangeWindDirection(float rotation)
-    {
-        WindRotation = rotation;
+    {       
         windArrow.transform.localEulerAngles = new Vector3(0, 0, rotation);
+        this.transform.localEulerAngles = new Vector3(0, 90 - rotation, 0);
     }
 
     //CLICKS
@@ -97,6 +106,7 @@ public class Manager : Singleton<Manager> {
     public void GenerateBoxes()
     {
         boxGenerator.GenerateBoxes(boxQuantity);
+        isSimulating = false;
     }
     // light few random boxes
     public void LightBoxes()
