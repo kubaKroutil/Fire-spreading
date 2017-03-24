@@ -62,7 +62,8 @@ public class Box : MonoBehaviour {
     private IEnumerator SpreadFire()
     {
         yield return new WaitForSeconds(fireSpreadDelay);
-        Collider[] colls = Physics.OverlapSphere(Manager.Instance.GetSpreadingPosition(this.transform), Manager.Instance.SpreadRange, 1 << LayerMask.NameToLayer(flammableMask));
+        Collider[] colls = Physics.OverlapSphere(Manager.Instance.GetSpreadingPosition(this.transform), Manager.Instance.SpreadRange,
+                                                 1 << LayerMask.NameToLayer(flammableMask));
         foreach (Collider coll in colls)
         {
             coll.gameObject.GetComponent<Box>().LightThis();
@@ -84,7 +85,7 @@ public class Box : MonoBehaviour {
         Destroy(this.gameObject);
     }
 
-    //debug for overlap sphere in spred fire coroutine
+    //debug for overlap sphere in spread fire coroutine
     //private void OnDrawGizmos()
     //{
     //    Gizmos.color = Color.red;

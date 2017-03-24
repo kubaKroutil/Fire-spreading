@@ -22,7 +22,6 @@ public class BoxGenerator : MonoBehaviour {
     // generate boxes at random positions on terrain
     public void GenerateBoxes(int quantity)
     {
-        //DestroyAllBoxes();
         Manager.Instance.CallClearEvent();
         float terrainWidth = Terrain.activeTerrain.terrainData.size.x;
         float terrainLength = Terrain.activeTerrain.terrainData.size.z;

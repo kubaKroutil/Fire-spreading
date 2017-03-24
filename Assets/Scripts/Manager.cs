@@ -7,7 +7,11 @@ public class Manager : Singleton<Manager> {
     public float WindSpeed { get; set; } // modified by slider. values 0 - 10    
     [SerializeField]
     private GameObject windArrow;         // visual indicator for wind rotation
-    private int windMultiplier = 2;     //coz map is big
+    private int windMultiplier = 2;     
+    public float SpreadRange
+    {
+        get { return WindSpeed * windMultiplier; }
+    }
 
     //BOXES
     [SerializeField]
@@ -15,14 +19,10 @@ public class Manager : Singleton<Manager> {
     [SerializeField]
     private int lightBoxesQuantity = 50;    // for random light boxes
     private BoxGenerator boxGenerator;
-    public float SpreadRange
-    {
-        get { return WindSpeed * windMultiplier; }
-    }
-
+    
     //MANAGER
     private bool isSimulating = false;
-    private Mode clickingMode = Mode.Add;   // this is modified in dropdown
+    private Mode clickingMode = Mode.Add;   // this is modified by dropdown
 
     public delegate void GeneralEventHandler();
     public event GeneralEventHandler StartSimulation;
@@ -99,8 +99,7 @@ public class Manager : Singleton<Manager> {
             hit.transform.gameObject.GetComponent<Box>().LightThis();
         }
     }
-
-
+    
     //BUTTONS
     // create boxes at random position on terrain
     public void GenerateBoxes()

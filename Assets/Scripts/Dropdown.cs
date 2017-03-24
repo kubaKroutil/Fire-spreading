@@ -45,6 +45,4 @@ public class Dropdown : MonoBehaviour,IPointerEnterHandler,IPointerExitHandler {
         Manager.Instance.ChangeClickMode(Mode.ToggleFire);
         ToggleDropDown(false);
     }
-
-
 }
